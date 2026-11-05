@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Стратегия цветочной сети</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Golos+Text:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: editorial strategy document - numbered chapters, forest-ink headings on warm blush paper, rose accent; redaction bars hide the client name. Single light look by choice. */
+:root{
+  color-scheme: light;
+  --paper:#FFFFFF;
+  --blush:#F7EFEC;
+  --blush-2:#EFE1DC;
+  --ink:#1F2A25;
+  --forest:#1D3B30;
+  --forest-2:#2B4D40;
+  --muted:#5F6B65;
+  --line:#E6D9D3;
+  --rose:#B83D63;
+  --rose-soft:#F1D3DC;
+  --sage:#6E9479;
+  --sage-soft:#DCE8DF;
+  --display:"Yeseva One", "Playfair Display", Georgia, serif;
+  --body:"Golos Text", "Segoe UI", Roboto, Arial, sans-serif;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--forest)}
+a{color:var(--rose)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--rose);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;margin:0}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(30px,4.4vw,46px);line-height:1.1;color:var(--forest)}
+h3{font-size:19px;font-weight:700;color:var(--forest);line-height:1.3}
+p{margin:0}
+.lead{font-size:clamp(17px,2vw,20px);line-height:1.55;max-width:68ch}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--rose)}
+.num{font-variant-numeric:tabular-nums}
+.stack{display:flex;flex-direction:column;gap:16px}
+.stack-lg{display:flex;flex-direction:column;gap:30px}
+
+.redact{display:inline-block;background:var(--ink);color:transparent;border-radius:4px;padding:0 .2em;line-height:1.05;user-select:none;vertical-align:baseline;min-width:4.2em}
+.redact::after{content:"██████";color:transparent}
+.dark .redact,.cover .redact,footer .redact{background:#C9D6CE}
+
+/* bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--forest);color:#fff}
+.bar .wrap{display:flex;align-items:center;gap:14px;padding-block:10px}
+.bar .brand{font-weight:700;font-size:14px;white-space:nowrap;color:#F3E7E2}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1}
+.chips::-webkit-scrollbar{display:none}
+.chips a{flex:none;color:#D5E2DA;text-decoration:none;font-size:13px;padding:6px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.14);white-space:nowrap}
+.chips a.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.progress{height:3px;background:rgba(255,255,255,.1)}
+.progress i{display:block;height:100%;width:0;background:var(--rose-soft)}
+
+/* sections */
+.slide{padding-block:clamp(56px,8vw,96px);border-bottom:1px solid var(--line)}
+.slide.blush{background:var(--blush)}
+.slide.dark{background:var(--forest);color:#EAF1EC;border-bottom:none}
+.slide.dark h2,.slide.dark h3{color:#fff}
+.slide.dark .muted{color:#B9CCC1}
+.slide.dark .eyebrow{color:var(--rose-soft)}
+.head{display:flex;flex-direction:column;gap:14px;margin-bottom:36px}
+.chap{display:inline-flex;align-items:center;gap:10px}
+.chap b{font-family:var(--display);font-weight:400;font-size:15px;color:#fff;background:var(--rose);border-radius:999px;padding:3px 12px}
+
+/* cover */
+.cover{background:var(--forest);color:#EAF1EC;padding-block:clamp(56px,9vw,120px)}
+.cover-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:40px;align-items:end}
+.cover h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,7vw,82px);line-height:1.02;color:#fff}
+.cover h1 em{font-style:normal;color:var(--rose-soft)}
+.cover .sub{font-size:clamp(17px,2vw,21px);color:#D5E2DA;max-width:46ch}
+.meta{display:grid;gap:12px}
+.meta div{border-top:1px solid rgba(255,255,255,.18);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.meta span{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#9FB8AA}
+.meta b{font-weight:600;color:#fff}
+.client-line{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:15px;color:#D5E2DA}
+.nda{font-size:12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 10px;color:#D5E2DA}
+
+/* tiles & cards */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile .v{font-family:var(--display);font-size:clamp(26px,3.3vw,36px);line-height:1;color:var(--forest)}
+.tile .k{font-size:13.5px;color:var(--muted);line-height:1.35}
+.tile.accent{background:var(--forest);border-color:var(--forest)}
+.tile.accent .v{color:#fff}.tile.accent .k{color:#C6D6CC}
+.tile.rose .v{color:var(--rose)}
+.slide.dark .tile{background:var(--forest-2);border-color:rgba(255,255,255,.08)}
+.slide.dark .tile .v{color:#fff}.slide.dark .tile .k{color:#C6D6CC}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card ul,.card ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.pill{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--rose-soft);color:#7E2240;align-self:flex-start}
+.pill.sage{background:var(--sage-soft);color:#2F5A3B}
+.quote{font-family:var(--display);font-size:clamp(26px,3.6vw,40px);line-height:1.2;color:var(--forest);max-width:26ch}
+.quote em{font-style:normal;color:var(--rose)}
+.note{border-left:3px solid var(--rose);padding:4px 0 4px 16px;color:var(--forest-2)}
+.slide.dark .note{color:#E3ECE6}
+
+/* insight */
+.insight{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch}
+.insight .arrow{display:grid;place-items:center;font-family:var(--display);font-size:34px;color:var(--rose)}
+.insight .card.b{background:var(--forest);border-color:var(--forest);color:#E3ECE6}
+.insight .card.b h3{color:#fff}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.45}
+th{background:var(--forest);color:#fff;text-align:left;font-weight:600;font-size:13px;padding:11px 14px;vertical-align:bottom}
+td{padding:11px 14px;border-top:1px solid var(--line);vertical-align:top;color:var(--ink)}
+tr:nth-child(even) td{background:#FCF8F6}
+td.r,th.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+tr.total td{background:var(--blush-2);font-weight:700;color:var(--forest)}
+tr.hl td{background:#F1F7F2}
+tr.sub td{background:var(--blush-2);font-weight:700;color:var(--forest)}
+.tw.wide table{min-width:760px}
+.tw.mid table{min-width:600px}
+
+/* phases */
+.phases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;counter-reset:ph}
+.phase{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:8px;position:relative}
+.phase .s{font-family:var(--display);font-size:28px;color:var(--rose);line-height:1}
+.phase .when{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sage)}
+.gate{margin-top:14px;display:flex;gap:12px;align-items:flex-start;background:var(--sage-soft);border-radius:var(--r);padding:16px 18px;color:#24452F}
+
+/* timeline */
+.tl{display:flex;flex-direction:column;border-left:2px solid var(--rose-soft);margin-left:8px}
+.tl .it{position:relative;padding:0 0 20px 24px;display:grid;grid-template-columns:190px 1fr;gap:4px 18px}
+.tl .it::before{content:"";position:absolute;left:-8px;top:5px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--rose)}
+.tl .it.peak::before{background:var(--rose)}
+.tl .d{font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums}
+
+/* chart */
+.chart{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;align-items:end;height:250px;padding:16px 4px 0;border-bottom:1px solid var(--line)}
+.chart .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;min-width:0}
+.chart .bar-v{width:100%;max-width:84px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,#D4567C,var(--rose))}
+.chart .col.free .bar-v{background:linear-gradient(180deg,#98B9A0,var(--sage))}
+.chart .lbl{font-size:13px;font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chart-x{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;padding:8px 4px 0;font-size:12.5px;color:var(--muted);text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.seg{display:inline-flex;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px}
+.seg button{font:inherit;font-size:14px;font-weight:600;border:0;background:transparent;color:var(--forest-2);padding:9px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--forest);color:#fff}
+
+/* billboard */
+.bb{aspect-ratio:3/1.15;max-width:100%;border-radius:10px;background:linear-gradient(120deg,var(--forest) 0%,var(--forest-2) 60%,var(--rose) 100%);color:#fff;display:grid;grid-template-columns:1.5fr 1fr;align-items:center;padding:4% 5%;gap:4%}
+.bb .big{font-family:var(--display);font-size:clamp(22px,4vw,44px);line-height:1}
+.bb .big span{color:var(--rose-soft)}
+.bb .addr{font-size:clamp(10px,1.3vw,14px);color:#D5E2DA;margin-top:8px}
+.bb .qr{justify-self:end;width:clamp(48px,9vw,96px);aspect-ratio:1;background:#fff;border-radius:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:7px}
+.bb .qr i{background:var(--forest);border-radius:2px}
+.bb .qr i:nth-child(3n){background:transparent}
+.bb2{background:#fff;color:var(--forest);border:1px solid var(--line);grid-template-columns:1fr 1fr}
+.bb2 .half{display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+.bb2 .ph{width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,#F6C9D6,#D5698B 55%,#9B2E50)}
+.bb2 .ph.big{width:92%;background:radial-gradient(circle at 30% 30%,#FFE0E8,#E28CA6 40%,#B83D63 70%,#6E9479 100%)}
+.bb2 .t{font-size:clamp(10px,1.4vw,14px);font-weight:700}
+
+footer{background:var(--forest);color:#9FB8AA;font-size:13px}
+footer .wrap{padding-block:22px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
+
+@media (max-width:900px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:1fr}
+  .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cover-grid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .g2{grid-template-columns:1fr}
+  .insight{grid-template-columns:1fr}
+  .insight .arrow{transform:rotate(90deg)}
+  .phases{grid-template-columns:1fr}
+  .tl .it{grid-template-columns:1fr}
+  .bar .brand{display:none}
+  .chart{height:200px;gap:6px}.chart-x{gap:6px}.chart .lbl{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+
+<header class="bar" aria-label="Разделы">
+  <div class="wrap">
+    <span class="brand">Стратегия · цветочная сеть</span>
+    <nav class="chips" id="chips">
+      <a href="#summary">Резюме</a>
+      <a href="#market">Рынок</a>
+      <a href="#audit">Аудит</a>
+      <a href="#insight">Инсайт</a>
+      <a href="#goal">Цель</a>
+      <a href="#audience">Аудитории</a>
+      <a href="#architecture">Архитектура</a>
+      <a href="#foundation">Фундамент</a>
+      <a href="#content">Контент</a>
+      <a href="#channels">Каналы</a>
+      <a href="#retention">Удержание</a>
+      <a href="#roadmap">Дорожная карта</a>
+      <a href="#forecast">Прогноз</a>
+      <a href="#stress">Стресс-тест</a>
+      <a href="#unit">Юнит-экономика</a>
+      <a href="#channels-roi">Решения по каналам</a>
+      <a href="#control">Измерение</a>
+      <a href="#risks">Риски</a>
+    </nav>
+  </div>
+  <div class="progress"><i id="prog"></i></div>
+</header>
+
+<!-- COVER -->
+<section class="cover">
+  <div class="wrap cover-grid">
+    <div class="stack-lg">
+      <span class="eyebrow" style="color:var(--rose-soft)">Маркетинговая стратегия · кейс</span>
+      <h1>Сеть цветочных баз:<br><em>от 7 точек к бренду №1 в городе</em></h1>
+      <p class="sub">Стратегия маркетинга и продвижения на 6 месяцев для региональной сети цветочных баз с оптовыми ценами: диагноз, позиционирование, система контента, каналы, удержание и прогноз выручки по каждому инструменту.</p>
+      <div class="client-line">Клиент: <span class="redact" aria-label="название скрыто"></span><span class="nda">название скрыто по NDA</span></div>
+    </div>
+    <div class="meta">
+      <div><span>Город</span><b>г. С. (миллионник)</b></div>
+      <div><span>Бизнес</span><b>Сеть цветочных баз, 7 точек, 12 лет на рынке</b></div>
+      <div><span>Горизонт</span><b>6 месяцев, ключевой пик - 8 Марта</b></div>
+      <div><span>Задача</span><b>Узнаваемость, отзывы и выручка: стать первым в городе</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- 01 SUMMARY -->
+<section class="slide" id="summary">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>01</b><span class="eyebrow">Резюме стратегии</span></span>
+      <h2>Масштаб есть, бренда нет. Стратегия превращает сеть в бренд</h2>
+      <p class="lead">У сети уже есть то, чего нет ни у одного цветочного в городе: 7 точек, оптовые цены и самая большая база отзывов. Мешают три вещи: репутация несвежих цветов на части точек, скрытые доплаты и витрина, которая не доказывает низкую цену. Стратегия сначала чинит продукт и обещание, затем показывает это городу, затем удерживает покупателя.</p>
+    </div>
+    <div class="tiles">
+      <div class="tile accent"><span class="v num">31,2 млн ₽</span><span class="k">прогноз дополнительной выручки за 6 месяцев</span></div>
+      <div class="tile"><span class="v num">12,5 млн ₽</span><span class="k">валовая прибыль при марже 40%</span></div>
+      <div class="tile rose"><span class="v num">131%</span><span class="k">ROMI на все вложения</span></div>
+      <div class="tile"><span class="v num">56%</span><span class="k">прогнозной выручки - без рекламного бюджета</span></div>
+    </div>
+    <div class="g3" style="margin-top:16px">
+      <div class="card"><span class="pill">Позиционирование</span><p class="quote" style="font-size:clamp(22px,2.6vw,28px)">Больше цветов за те же деньги, <em>и они стоят</em></p></div>
+      <div class="card"><span class="pill">Принцип</span><h3>Сначала продукт, потом трафик</h3><p class="small muted">Платный охват включается только после фундамента: свежесть, честная цена, отзывы, единый бренд. Иначе реклама масштабирует негатив.</p></div>
+      <div class="card"><span class="pill">Механика</span><h3>Каждый ролик доказывает цену, объём или свежесть</h3><p class="small muted">Цена и живой человек в каждом кадре. Каждый канал - со своим промокодом, чтобы считать покупки, а не лайки.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 MARKET -->
+<section class="slide blush" id="market">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>02</b><span class="eyebrow">Рынок</span></span>
+      <h2>Рынок экономит - и это окно для цветочной базы</h2>
+      <p class="lead">Рынок цветов большой, но в 2026 году перестал расти: покупатель экономит, и выигрывает тот, кто даёт больше цветов за те же деньги. Для сети с оптовыми ценами это лучший момент для захвата доли.</p>
+    </div>
+    <div class="stack-lg">
+      <div class="tiles">
+        <div class="tile"><span class="v num">450 млрд ₽</span><span class="k">рынок России в 2025 году, +12% к 2024 (Inc. Russia)</span></div>
+        <div class="tile"><span class="v num">−0,2%</span><span class="k">январь-июль 2026 к прошлому году; в штуках −4%</span></div>
+        <div class="tile"><span class="v num">+26%</span><span class="k">рост онлайна при падении офлайна на 4,5%</span></div>
+        <div class="tile"><span class="v num">4 041 ₽</span><span class="k">медианный чек; онлайн - 5 255 ₽; покупок −7,7%</span></div>
+      </div>
+      <div class="tw wide"><table>
+        <thead><tr><th>Сегмент</th><th>Признак</th><th>Что происходит в 2026 году</th><th>Вывод для клиента</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td><b>Цветочные базы</b></td><td>Цена за стебель, охапки, самообслуживание</td><td>Выигрывают от экономии. В Москве «Мосцветторг» (85 баз), в Петербурге «Цветоптторг»</td><td><b>Наш сегмент.</b> Образец масштаба и подачи цены</td></tr>
+          <tr><td>Средний сегмент: салоны и доставка</td><td>Чек 1 000-3 000 ₽, около 59% рынка</td><td>Основной объём, высокая конкуренция</td><td>Отсюда забираем покупателей аргументом «за те же деньги больше»</td></tr>
+          <tr><td>Премиум и авторская флористика</td><td>Букеты от 8-10 тыс. ₽</td><td>Живут за счёт визуала и коллабораций</td><td>Не конкурент. Источник приёмов для съёмки</td></tr>
+          <tr><td>Агрегаторы и маркетплейсы</td><td>Заказ в приложении</td><td>«Яндекс Еда» +98% за полугодие, Wildberries - более чем вдвое</td><td>Нужен свой быстрый онлайн-заказ</td></tr>
+          <tr><td>Продуктовые сети</td><td>Простые букеты рядом с домом</td><td>Около трети покупателей</td><td>Конкурент по цене в праздники</td></tr>
+          <tr><td>Франшизные сети</td><td>Единый бренд на десятки точек</td><td>Bambini Flowers - 184 точки</td><td>Образец системности: один стандарт на все точки</td></tr>
+        </tbody>
+      </table></div>
+      <div class="g2">
+        <div class="card"><h3>Тренды, которые формируют стратегию</h3>
+          <ul>
+            <li><b>Экономия.</b> Средний чек растёт на 2,4% против 11,8% годом ранее; букеты становятся менее пышными.</li>
+            <li><b>Цена за стебель</b> как ориентир: роза в среднем 248 ₽, хризантема 294 ₽, тюльпан 128 ₽ («Эвотор»).</li>
+            <li><b>Пики.</b> Перед 8 Марта поиск растёт на 160%, в сам день - в девять раз; далее День матери и 14 февраля.</li>
+            <li><b>Маркетинг - главная боль отрасли:</b> так считают 56% владельцев цветочных (Flowwow).</li>
+          </ul>
+        </div>
+        <div class="card"><h3>Город</h3>
+          <ul>
+            <li>Около 650 цветочных магазинов и нет бренда, который знает весь город.</li>
+            <li>Букет из 7 роз в среднем 2 180 ₽ (2ГИС).</li>
+            <li>40,3% ищут цветы за несколько дней до 8 Марта, 37,6% - в сам день.</li>
+            <li>«Оптовые цены» заявляют многие, а свежесть конкуренты уже сделали своим главным аргументом.</li>
+            <li>Прогноз стратегии - около 1,7% рынка города за полгода.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="stack">
+        <h3>Конкурентное поле</h3>
+        <div class="tw mid"><table>
+          <thead><tr><th>Игрок</th><th class="r">Точек</th><th>Рейтинг и оценки</th><th>Чем берёт</th></tr></thead>
+          <tbody>
+            <tr class="hl"><td><b>Клиент</b></td><td class="r">7</td><td>1 159 оценок по всем карточкам</td><td>Оптовые цены, масштаб, отдел фурнитуры</td></tr>
+            <tr><td>Конкурент A</td><td class="r">3</td><td>4,9 · 1 085</td><td>Самая сильная карточка города, реклама в чужих карточках</td></tr>
+            <tr><td>Конкурент B</td><td class="r">5</td><td>5,0 · 624</td><td>Круглосуточно, «розы от 150 ₽»</td></tr>
+            <tr><td>Конкурент C</td><td class="r">2</td><td>4,9 · 500</td><td>Доставка от 30 минут</td></tr>
+            <tr><td>Конкурент D</td><td class="r">2</td><td>4,9 · 188</td><td>Гарантия свежести 72 часа</td></tr>
+            <tr><td>Конкурент E</td><td class="r">2</td><td>4,9 · 290</td><td>Роза по 115 ₽</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 AUDIT -->
+<section class="slide" id="audit">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>03</b><span class="eyebrow">Аудит</span></span>
+      <h2>Сильная база, которая не работает на бренд</h2>
+    </div>
+    <div class="stack-lg">
+      <div class="g2">
+        <div class="card"><span class="pill sage">Что уже работает</span>
+          <ul>
+            <li><b>Масштаб:</b> первые в городе по числу точек и отзывов</li>
+            <li><b>Цена:</b> в отзывах - «цены самые приятные в городе»</li>
+            <li><b>Люди:</b> покупатели возвращаются к конкретным флористам по имени</li>
+            <li><b>Отдел фурнитуры:</b> у них закупаются другие цветочные - готовый вход в B2B</li>
+            <li><b>История:</b> семейный бизнес, 12 лет, второе поколение</li>
+          </ul>
+        </div>
+        <div class="card"><span class="pill">Что мешает</span>
+          <ul>
+            <li>На одной точке рейтинг 3,1 при 4,6-4,9 у остальных</li>
+            <li>Жалобы на стойкость букетов в пиковые праздники</li>
+            <li>Сборка и упаковка оплачиваются отдельно - итог на кассе выше ожиданий</li>
+            <li>Ответы на отзывы шаблонные и с задержкой</li>
+            <li>В собственных карточках показывается реклама конкурентов</li>
+            <li>Разные ники на площадках, две карточки на одном адресе</li>
+            <li>Соцсети: 658 подписчиков на 7 точек, 70-125 просмотров на пост, в кадре нет людей</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tw mid"><table>
+        <thead><tr><th>Точка</th><th class="r">Рейтинг</th><th class="r">Оценок</th><th>Роль в стратегии</th></tr></thead>
+        <tbody>
+          <tr><td>Флагман и база</td><td class="r">4,9</td><td class="r">496</td><td>Съёмочная площадка, главный герой карт</td></tr>
+          <tr><td>Точка 2</td><td class="r">4,9</td><td class="r">126</td><td></td></tr>
+          <tr><td>Точка 3</td><td class="r">4,8</td><td class="r">150</td><td></td></tr>
+          <tr><td>Точка 4</td><td class="r">4,8</td><td class="r">77</td><td></td></tr>
+          <tr><td>Точка 5</td><td class="r">4,6</td><td class="r">148</td><td></td></tr>
+          <tr><td>Дубль карточки флагмана</td><td class="r">4,6</td><td class="r">10</td><td>Объединяем</td></tr>
+          <tr><td>Точка 7</td><td class="r">3,1</td><td class="r">152</td><td><b>Проблемная точка - разбираем первой</b></td></tr>
+        </tbody>
+      </table></div>
+      <div class="card">
+        <h3>Диагноз: почему маркетинг не работает</h3>
+        <p class="muted">Маркетинг слаб не из-за редких постов, а потому что обещание бренда не подтверждается ни продуктом, ни витриной.</p>
+        <ol>
+          <li>Обещание «оптовые цены» ничем не доказано: нет цены за стебель, сравнений, расчёта «сколько цветов на 3 000 ₽».</li>
+          <li>Низкая цена без гарантии читается как «несвежее».</li>
+          <li>Цена на кассе выше цены в голове.</li>
+          <li>Опыт зависит от точки - реклама приведёт людей на все семь.</li>
+          <li>У бренда нет лица: флористов любят по именам, но в контенте их нет.</li>
+          <li>Нет причины подписаться и вернуться: рубрик, пользы, базы клиентов.</li>
+          <li>Праздники работают против бренда: в дни максимальных продаж растут очереди и плохие отзывы.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 INSIGHT -->
+<section class="slide dark" id="insight">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>04</b><span class="eyebrow">Ключевой инсайт и позиционирование</span></span>
+      <h2>Главный барьер покупателя: «дёшево - значит несвежее»</h2>
+      <p class="lead" style="color:#D5E2DA">Цена сама по себе не отличает: конкуренты пишут цену за стебель прямо в рекламе. Выигрывает тот, кто снимет страх несвежести и докажет «больше за те же деньги».</p>
+    </div>
+    <div class="stack-lg">
+      <p class="quote" style="color:#fff">Больше цветов за те же деньги, <em style="color:var(--rose-soft)">и они стоят.</em></p>
+      <div class="g3">
+        <div class="tile"><span class="v">Цена</span><span class="k">Цифра в каждом ролике и посте: за стебель, за охапку, за букет под ключ</span></div>
+        <div class="tile"><span class="v">Объём</span><span class="k">Большие букеты и охапки как визитная карточка</span></div>
+        <div class="tile"><span class="v">Свежесть</span><span class="k">Публичная гарантия, поставки в кадре, тесты стойкости</span></div>
+      </div>
+      <div class="g2">
+        <div class="stack"><h3>Характер бренда</h3><p>Свой, открытый, с юмором. База, где тебя знают по имени и соберут букет под любой бюджет. Не салон и не бутик.</p></div>
+        <div class="stack"><h3>Про премиум</h3><p>В премиум не уходим. Берём у него вид: трендовые цветы, крупные формы, красивую съёмку. Цена всегда в кадре, иначе зритель решит, что здесь дорого.</p></div>
+      </div>
+      <p class="note">Свободные территории, которые не занял никто в городе: цветы для дома, подписка и «живой» бренд с людьми в кадре.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 GOAL -->
+<section class="slide blush" id="goal">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>05</b><span class="eyebrow">Цель и KPI</span></span>
+      <h2>Первые в городе по узнаваемости и отзывам за 6 месяцев</h2>
+    </div>
+    <div class="tw mid"><table>
+      <thead><tr><th>Показатель</th><th class="r">Старт</th><th class="r">Цель</th><th>Где смотрим</th></tr></thead>
+      <tbody>
+        <tr><td>Рейтинг проблемной точки</td><td class="r">3,1</td><td class="r"><b>не ниже 4,5</b></td><td>2ГИС</td></tr>
+        <tr><td>Рейтинг остальных точек</td><td class="r">4,6-4,9</td><td class="r"><b>не ниже 4,7</b></td><td>2ГИС, Яндекс Карты</td></tr>
+        <tr><td>Оценок у флагмана</td><td class="r">496</td><td class="r"><b>1 100+, первое место в городе</b></td><td>2ГИС</td></tr>
+        <tr><td>Подписчики во всех соцсетях</td><td class="r">-</td><td class="r"><b>+20 000</b></td><td>Кабинеты площадок</td></tr>
+        <tr><td>Подписчики Telegram</td><td class="r">658</td><td class="r"><b>4 000</b></td><td>Telegram</td></tr>
+        <tr><td>Клиенты в базе с телефоном</td><td class="r">0</td><td class="r"><b>6 000</b></td><td>Касса, бот</td></tr>
+        <tr><td>Доля повторных покупок</td><td class="r">данные кассы</td><td class="r"><b>+10-15 п. п.</b></td><td>Касса</td></tr>
+        <tr><td>Покупки по промокодам и QR</td><td class="r">0</td><td class="r"><b>10 410 за 6 месяцев</b></td><td>Касса</td></tr>
+        <tr><td>Дополнительная выручка</td><td class="r">-</td><td class="r"><b>≈31,2 млн ₽</b></td><td>Касса</td></tr>
+        <tr><td>Знание бренда среди жителей</td><td class="r">замер до старта</td><td class="r"><b>рост к финальному замеру</b></td><td>Опрос</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- 06 AUDIENCE -->
+<section class="slide" id="audience">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>06</b><span class="eyebrow">Аудитории</span></span>
+      <h2>Пять аудиторий - пять разных обещаний</h2>
+    </div>
+    <div class="tw mid"><table>
+      <thead><tr><th>Кто</th><th>Что важно</th><th>Что говорим</th></tr></thead>
+      <tbody>
+        <tr><td><b>Мужчины, покупают к поводу</b></td><td>Не ошибиться, произвести впечатление, чтобы не завяло</td><td>Большой букет за понятные деньги, гарантия, сборка за 10 минут</td></tr>
+        <tr><td><b>Женщины, себе и в подарок</b></td><td>Красиво, недорого, регулярно</td><td>Цветы для дома, охапки, подписка</td></tr>
+        <tr><td><b>Родители и классы</b></td><td>Много букетов в один день, жёсткий бюджет</td><td>Предзаказ пачками к 1 сентября, Дню учителя, выпускным</td></tr>
+        <tr><td><b>Компании</b></td><td>Счёт, доставка, регулярность</td><td>Корпоративные условия и календарь поздравлений</td></tr>
+        <tr><td><b>Флористы и небольшие цветочные</b></td><td>Цена, стабильность поставок, упаковка</td><td>Оптовый прайс, предзаказ, отдел фурнитуры</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="stack" style="margin-top:28px">
+      <h3>Как проверяем гипотезы об аудиториях</h3>
+      <p class="muted">Первые 3 недели фундамента идут параллельно с исследованием. Сегменты выше - стартовая гипотеза, финальные решения принимаются на данных.</p>
+      <div class="tw wide"><table>
+        <thead><tr><th>Метод</th><th>Что делаем</th><th>Что узнаём</th></tr></thead>
+        <tbody>
+          <tr><td><b>Данные кассы за 12 месяцев</b></td><td>Чеки по точкам, часам, праздникам, распределение сумм</td><td>Реальный средний чек, доля праздников, сегменты по чеку</td></tr>
+          <tr><td><b>Разметка отзывов</b></td><td>1 159 отзывов делим по мотивам и жалобам</td><td>Что ценят, чего боятся, на каких точках</td></tr>
+          <tr><td><b>Интервью в точках</b></td><td>15-20 коротких разговоров по 5 минут на 3 точках в разные дни</td><td>Для кого покупают, почему здесь, что останавливает</td></tr>
+          <tr><td><b>Опрос по QR на кассе</b></td><td>200+ ответов за бонус</td><td>Кто покупает, откуда узнали, как часто</td></tr>
+          <tr><td><b>Замер узнаваемости</b></td><td>Опрос в городских пабликах, 400+ ответов, до старта и в финале</td><td>Знание бренда с подсказкой и без</td></tr>
+          <tr><td><b>Тест позиционирования</b></td><td>Два оффера в VK за 20-30 тыс. ₽: «цена» против «свежести»</td><td>Какой аргумент сильнее</td></tr>
+          <tr><td><b>Тест рубрик</b></td><td>Каждая рубрика - минимум 4 ролика в первый месяц</td><td>Оставляем 3-4 лучшие по досмотрам и обращениям</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 ARCHITECTURE -->
+<section class="slide blush" id="architecture">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>07</b><span class="eyebrow">Архитектура стратегии</span></span>
+      <h2>Четыре этапа, которые идут внахлёст</h2>
+    </div>
+    <div class="phases">
+      <div class="phase"><span class="s">1</span><span class="when">Месяц 1</span><h3>Фундамент</h3><p class="small muted">Свежесть, честная цена, отзывы, единый бренд, воронка, позиционирование</p></div>
+      <div class="phase"><span class="s">2</span><span class="when">С 1 месяца</span><h3>Контент</h3><p class="small muted">Ежедневное доказательство цены, объёма и свежести с людьми в кадре</p></div>
+      <div class="phase"><span class="s">3</span><span class="when">Со 2 месяца</span><h3>Охват</h3><p class="small muted">Блогеры и партнёрства по бартеру, с 3-4 месяца - платное продвижение и наружка</p></div>
+      <div class="phase"><span class="s">4</span><span class="when">С 3 месяца</span><h3>Удержание</h3><p class="small muted">База клиентов, подписка, цветы для дома, B2B, клуб флористов</p></div>
+    </div>
+    <div class="gate"><b>Правило входа в платный трафик:</b>&nbsp;реклама включается только после фундамента. Иначе каждый рубль рекламы увеличивает число разочарованных покупателей.</div>
+  </div>
+</section>
+
+<!-- 08 FOUNDATION -->
+<section class="slide" id="foundation">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>08</b><span class="eyebrow">Фундамент</span></span>
+      <h2>Что чиним до первого рубля в рекламе</h2>
+      <p class="lead">7 точек, 14 карточек на картах, 4 площадки и 4 праздничных пика. Задача фундамента - привести сеть к одному стандарту, чтобы любая точка давала одинаково хороший опыт.</p>
+    </div>
+    <div class="g2">
+      <div class="card"><span class="pill">1</span><h3>Продукт, сервис и гарантия свежести</h3>
+        <ul>
+          <li>Публичная гарантия: завяли в течение трёх дней - меняем букет по фото и чеку</li>
+          <li>Дата поставки на ценнике, памятка и подкормка в каждом букете</li>
+          <li>Отдельная полка «уценка» - несвежее не попадает в праздничные букеты</li>
+          <li>Единый стандарт обслуживания: скрипт, внешний вид, скорость</li>
+          <li>Разбор проблемной точки: холодильник, ротация, приёмка, ответственный</li>
+        </ul>
+      </div>
+      <div class="card"><span class="pill">2</span><h3>Честная цена</h3>
+        <ul>
+          <li>Сборка и базовая упаковка - в цене готового букета</li>
+          <li>Открытый прайс на услуги у входа и в соцсетях</li>
+          <li>Утренняя сверка ценников с кассой, пересчёт пачек при покупателе</li>
+          <li>Линейка «под бюджет» и товар-символ - после расчёта маржи</li>
+        </ul>
+      </div>
+      <div class="card"><span class="pill">3</span><h3>Репутация</h3>
+        <ul>
+          <li>Ответ на каждый отзыв за 24 часа: извинение, решение, контакт ответственного</li>
+          <li>Отработка старого негатива с просьбой обновить отзыв</li>
+          <li>QR на кассе, в чеке, на упаковке, в букете - просим отзыв, но не платим за него</li>
+        </ul>
+      </div>
+      <div class="card"><span class="pill">4</span><h3>Единый бренд и карты</h3>
+        <ul>
+          <li>Один ник, одно название, логотип, описание и телефон на всех площадках</li>
+          <li>Объединение дублей карточек</li>
+          <li>Карточки с ценами, фото, акциями и кнопкой заказа; платное размещение без рекламы конкурентов - вместе с рекламным бюджетом</li>
+          <li>Сайт: актуальный текст, цены за стебель, гарантия, быстрый заказ</li>
+        </ul>
+      </div>
+      <div class="card"><span class="pill">5</span><h3>Система учёта</h3>
+        <ul>
+          <li>Промокод или QR на каждый канал</li>
+          <li>Сбор телефонов на кассе в обмен на бонус</li>
+          <li>Кассовая статистика по точкам</li>
+        </ul>
+      </div>
+      <div class="card"><span class="pill">6</span><h3>Готовность к пикам</h3>
+        <ul>
+          <li>Предзаказ с выдачей по временным слотам</li>
+          <li>Отдельная линия выдачи предзаказов</li>
+          <li>Временные сотрудники обучены заранее и стоят на упаковке и выдаче</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 CONTENT -->
+<section class="slide blush" id="content">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>09</b><span class="eyebrow">Контент-система</span></span>
+      <h2>Каждый ролик доказывает одно из трёх: цену, объём или свежесть</h2>
+      <p class="lead">30 роликов в месяц и ежедневные сторис. Один съёмочный день на флагмане даёт запас на неделю. Контент делается один раз и разносится по всем площадкам.</p>
+    </div>
+    <div class="stack-lg">
+      <div class="g2">
+        <div class="card"><h3>Правила</h3>
+          <ul>
+            <li><b>Цена в кадре всегда</b> - за стебель, за охапку или за букет под ключ</li>
+            <li><b>Люди в кадре</b> - флористы с именами, покупатели с их согласия, курьеры</li>
+            <li><b>Первые две секунды - крючок:</b> «Что можно собрать на 2 000 ₽?»</li>
+            <li><b>Одна мысль на ролик,</b> в конце - адрес ближайшей точки и способ заказа</li>
+            <li><b>Только конкретные цифры</b> - без «самые дешёвые» и «№1»</li>
+          </ul>
+        </div>
+        <div class="card"><h3>Telegram как витрина цен</h3>
+          <ul>
+            <li>Утром - «цены дня» за стебель</li>
+            <li>В день поставки - «свежий дроп» с расчётом охапок</li>
+            <li>Раз в неделю - закрытое предложение для подписчиков</li>
+            <li>Бронь через кнопку или бота</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tw wide"><table>
+        <thead><tr><th>Рубрика</th><th>Что снимаем</th><th>Что доказывает</th><th>Частота</th></tr></thead>
+        <tbody>
+          <tr><td><b>«Что можно на 5 тысяч»</b></td><td>Два букета за одну сумму: средний по городу и наш. Серии на 1 500, 3 000, 5 000 и 10 000 ₽</td><td>Цену</td><td>1 в неделю</td></tr>
+          <tr><td><b>«Большой букет, честная цена»</b></td><td>51 и 101 роза, охапки, гортензии, реакция получателя</td><td>Объём</td><td>1 в неделю</td></tr>
+          <tr><td><b>«Собери за 10 минут»</b></td><td>Покупатель называет сумму, флорист собирает</td><td>Цену и людей</td><td>1 в неделю</td></tr>
+          <tr><td><b>«Приехала поставка»</b></td><td>Разгрузка, дата, цена за ветку, расчёт охапок</td><td>Свежесть</td><td>В день поставки</td></tr>
+          <tr><td><b>«Жизнь базы»</b></td><td>Закулисье: утро перед праздником, разговоры флористов</td><td>Людей и характер</td><td>1 в неделю</td></tr>
+          <tr><td><b>«Сколько простоит»</b></td><td>Один букет на 1-й, 5-й и 10-й день</td><td>Свежесть</td><td>2 в месяц</td></tr>
+          <tr><td><b>«Цветы для дома»</b></td><td>Небольшие букеты и охапка недели в интерьере</td><td>Привычку покупать без повода</td><td>2 в месяц</td></tr>
+          <tr><td><b>«Тренд недели»</b></td><td>Вид как у премиальных студий, цена наша</td><td>Охват</td><td>1 в неделю</td></tr>
+          <tr><td><b>«Отзывы без купюр»</b></td><td>Разбор реальных отзывов: что случилось и что изменили</td><td>Доверие</td><td>1 в месяц</td></tr>
+          <tr><td><b>«Для флористов»</b></td><td>Приход упаковки, оптовые цены, предзаказ</td><td>Выгоду опта</td><td>2 в месяц</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Сравнение «за 5 тысяч» делаем честно: конкурентов не называем, сравниваем со средней ценой по городу, храним расчёт, цена нашего букета включает упаковку.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 CHANNELS -->
+<section class="slide" id="channels">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>10</b><span class="eyebrow">Каналы</span></span>
+      <h2>У каждого канала своя роль и свой промокод</h2>
+    </div>
+    <div class="stack-lg">
+      <div class="tw wide"><table>
+        <thead><tr><th>Канал</th><th>Роль</th><th>Что делаем</th></tr></thead>
+        <tbody>
+          <tr><td><b>Instagram</b></td><td>Витрина бренда и органический охват</td><td>Собственный контент, рубрики, работа с блогерами</td></tr>
+          <tr><td><b>VK и VK Клипы</b></td><td>Основная площадка платной рекламы</td><td>Клипы, товары с ценами, таргет на радиус от точек, посевы</td></tr>
+          <tr><td><b>Telegram и MAX</b></td><td>Своя аудитория, цены дня, брони</td><td>Перестройка канала, MAX - резервное зеркало</td></tr>
+          <tr><td><b>2ГИС и Яндекс Карты</b></td><td>Горячий спрос «рядом и недорого»</td><td>Цены, фото, ответы, акции, платные карточки без чужой рекламы</td></tr>
+          <tr><td><b>Сайт</b></td><td>Заказ и доставка</td><td>Цены, гарантия, быстрый заказ</td></tr>
+          <tr><td><b>Наружная реклама</b></td><td>Узнаваемость и контент для соцсетей</td><td>Баннеры с конкретной ценой и QR</td></tr>
+          <tr><td><b>Блогеры и амбассадоры</b></td><td>Доверие и охват</td><td>Сборка букета под бюджет в кадре, личные промокоды</td></tr>
+          <tr><td><b>Коллаборации</b></td><td>Новые аудитории</td><td>Автосообщества, кофейни, салоны, свадебные площадки, родкомитеты</td></tr>
+        </tbody>
+      </table></div>
+      <div class="g2">
+        <div class="card">
+          <span class="eyebrow">Наружная реклама · два типа баннеров</span>
+          <div class="bb">
+            <div><div class="big">51 роза - <span>___ ₽</span></div><div class="addr"><span class="redact" style="min-width:3em"></span> · адрес ближайшей точки · промокод</div></div>
+            <div class="qr" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="bb bb2">
+            <div class="half"><div class="ph"></div><span class="t">5 000 ₽ - такой букет</span></div>
+            <div class="half"><div class="ph big"></div><span class="t">или такой?</span></div>
+          </div>
+          <p class="small muted">Макеты концепции. Цены ставятся после расчёта маржи.</p>
+        </div>
+        <div class="stack">
+          <div class="card"><h3>Блогеры и амбассадоры</h3>
+            <ul>
+              <li>Городские лайфстайл-блогеры, мамы, автотематика, городские паблики</li>
+              <li>Формат: блогер приходит с бюджетом и собирает букет с флористом</li>
+              <li>3-5 амбассадоров на 3-6 месяцев с личным промокодом</li>
+              <li>Каждое платное размещение маркируется</li>
+            </ul>
+          </div>
+          <div class="card"><h3>Коллаборации</h3>
+            <ul>
+              <li><b>Автосообщества:</b> вручение больших букетов - выход на мужскую аудиторию</li>
+              <li><b>Кофейни и салоны:</b> букеты на стойке с QR на подписку</li>
+              <li><b>Школы:</b> предзаказ пачками к сезонным датам</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 RETENTION -->
+<section class="slide blush" id="retention">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>11</b><span class="eyebrow">Продукты и удержание</span></span>
+      <h2>Узнаваемость даёт первую покупку, первое место - повторная</h2>
+    </div>
+    <div class="tw wide"><table>
+      <thead><tr><th>Что вводим</th><th>Как работает</th><th>Зачем</th></tr></thead>
+      <tbody>
+        <tr><td><b>Товар-символ</b></td><td>Один большой букет по фиксированной цене круглый год</td><td>По нему город узнаёт сеть; главный герой баннеров</td></tr>
+        <tr><td><b>Линейка «под бюджет»</b></td><td>1 500, 3 000, 5 000 и 10 000 ₽, упаковка включена</td><td>Снимает страх доплат, ускоряет выбор</td></tr>
+        <tr><td><b>Цветы для дома</b></td><td>«Охапка недели» по низкой цене у входа</td><td>Привычка покупать без повода</td></tr>
+        <tr><td><b>Подписка</b></td><td>2 или 4 букета в месяц, оплата вперёд</td><td>Предсказуемая выручка вне праздников</td></tr>
+        <tr><td><b>База клиентов</b></td><td>Телефон за бонус, напоминания о датах, бот</td><td>Повторные продажи без затрат на рекламу</td></tr>
+        <tr><td><b>Корпоративные клиенты</b></td><td>Счёт, доставка, календарь поздравлений</td><td>Крупные регулярные заказы</td></tr>
+        <tr><td><b>Клуб для флористов</b></td><td>Оптовый прайс, предзаказ, отдел фурнитуры</td><td>Закрепляет роль главной базы города</td></tr>
+        <tr><td><b>Праздничный предзаказ</b></td><td>Выдача по слотам, отдельная линия</td><td>Убирает очереди и плохие отзывы в пики</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- 12 ROADMAP -->
+<section class="slide" id="roadmap">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>12</b><span class="eyebrow">Дорожная карта</span></span>
+      <h2>Шесть месяцев с пиком на 8 Марта</h2>
+    </div>
+    <div class="g2">
+      <div class="tl">
+        <div class="it"><span class="d">Месяц 1</span><span><b>Фундамент:</b> воронка, соцсети, позиционирование, объединение точек, карты, отзывы. Старт контента</span></div>
+        <div class="it"><span class="d">Месяц 2</span><span>Блогеры, инфлюенсеры, амбассадоры, партнёрства по бартеру. Подписка и база клиентов</span></div>
+        <div class="it"><span class="d">Месяц 2-3</span><span>Креаторы; при необходимости - небольшие тестовые бюджеты</span></div>
+        <div class="it"><span class="d">Месяц 3</span><span>Продукты удержания и B2B</span></div>
+        <div class="it"><span class="d">Месяц 3-4</span><span>Платное продвижение: Яндекс, VK Реклама, платные карточки, посевы; основная волна наружки</span></div>
+        <div class="it peak"><span class="d">Месяц 5</span><span><b>Пик сезона:</b> все каналы на максимум, предзаказ</span></div>
+        <div class="it"><span class="d">Месяц 6</span><span>Удержание и итоги: работа с базой, масштаб окупившихся каналов</span></div>
+      </div>
+      <div class="card">
+        <h3>Ритм контроля</h3>
+        <ul>
+          <li><b>Еженедельно:</b> выход контента, просмотры, отзывы, рейтинг по точкам</li>
+          <li><b>Ежемесячно:</b> продажи по точкам, покупки по промокодам, подписчики, ДРР</li>
+          <li><b>После каждого праздника:</b> очереди, списания, отзывы, что сработало</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 FORECAST -->
+<section class="slide blush" id="forecast">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>13</b><span class="eyebrow">Прогноз</span></span>
+      <h2>Прогноз выручки по каждому инструменту</h2>
+      <p class="lead">Модель считает только отслеживаемые покупки: промокоды, QR, бот, карты, доставка, база. Средний чек 3 000 ₽, валовая маржа 40%.</p>
+    </div>
+    <div class="stack-lg">
+      <div class="stack">
+        <h3>Три сценария рекламного бюджета</h3>
+        <div class="seg" role="group" aria-label="Сценарий">
+          <button type="button" id="sc-base" data-s="base" aria-pressed="false">Базовый</button>
+          <button type="button" id="sc-opt" data-s="opt" aria-pressed="true">Оптимальный</button>
+          <button type="button" id="sc-max" data-s="max" aria-pressed="false">Расширенный</button>
+        </div>
+        <div class="tiles" id="sc-tiles">
+          <div class="tile"><span class="v num" data-k="ads">1,5 млн ₽</span><span class="k">рекламный бюджет за период</span></div>
+          <div class="tile accent"><span class="v num" data-k="rev">31,2 млн ₽</span><span class="k">дополнительная выручка</span></div>
+          <div class="tile"><span class="v num" data-k="gp">12,5 млн ₽</span><span class="k">валовая прибыль</span></div>
+          <div class="tile rose"><span class="v num" data-k="pr">7,1 млн ₽ · 131%</span><span class="k">прибыль и ROMI</span></div>
+        </div>
+      </div>
+      <div class="g3">
+        <div class="card"><span class="eyebrow">Логика расчёта</span><p><b>Яндекс Директ:</b> 150 000 ₽ → 6 000 кликов по 25 ₽ → 6% покупают → 360 покупок × 3 000 ₽ = <b>1,1 млн ₽</b></p></div>
+        <div class="card"><span class="eyebrow">Платное продвижение</span><p class="quote" style="font-size:clamp(22px,2.6vw,28px)">1 ₽ рекламы ≈ <em>9 ₽ выручки</em></p></div>
+        <div class="card"><span class="eyebrow">Органика и база</span><p class="quote" style="font-size:clamp(22px,2.6vw,28px)">17,6 млн ₽ <em>из 31,2</em></p><p class="small muted">без рекламного бюджета</p></div>
+      </div>
+      <div>
+        <div class="chart" role="img" aria-label="Выручка по месяцам: 1,2; 2,6; 3,8; 6,5; 8,0; 9,1 млн рублей">
+          <div class="col free"><span class="lbl">1,2</span><div class="bar-v" style="height:13%"></div></div>
+          <div class="col free"><span class="lbl">2,6</span><div class="bar-v" style="height:28%"></div></div>
+          <div class="col free"><span class="lbl">3,8</span><div class="bar-v" style="height:41%"></div></div>
+          <div class="col"><span class="lbl">6,5</span><div class="bar-v" style="height:70%"></div></div>
+          <div class="col"><span class="lbl">8,0</span><div class="bar-v" style="height:86%"></div></div>
+          <div class="col"><span class="lbl">9,1</span><div class="bar-v" style="height:98%"></div></div>
+        </div>
+        <div class="chart-x"><span>Месяц 1</span><span>Месяц 2</span><span>Месяц 3</span><span>Месяц 4</span><span>Месяц 5</span><span>Месяц 6</span></div>
+      </div>
+      <div class="legend"><span><i style="background:var(--sage)"></i>без рекламного бюджета</span><span><i style="background:var(--rose)"></i>с платным продвижением</span><span>млн ₽, оптимальный сценарий</span></div>
+      <div class="tw wide"><table>
+        <thead><tr><th>Инструмент</th><th class="r">Бюджет за 6 мес.</th><th>KPI за 6 месяцев</th><th class="r">Покупки</th><th class="r">Выручка</th></tr></thead>
+        <tbody>
+          <tr class="sub"><td colspan="5">Без рекламного бюджета</td></tr>
+          <tr><td>Instagram</td><td class="r">0 ₽</td><td>+12 000 подписчиков, 4 млн просмотров</td><td class="r">1 300</td><td class="r">3,9 млн ₽</td></tr>
+          <tr><td>VK и VK Клипы</td><td class="r">0 ₽</td><td>+3 000 подписчиков, 1 млн просмотров</td><td class="r">350</td><td class="r">1,1 млн ₽</td></tr>
+          <tr><td>Telegram и MAX</td><td class="r">0 ₽</td><td>658 → 4 000; 350 броней в месяц</td><td class="r">600</td><td class="r">1,8 млн ₽</td></tr>
+          <tr><td>Блогеры по бартеру и амбассадоры</td><td class="r">0 ₽</td><td>20-25 интеграций в месяц, 1,5-2 млн охвата</td><td class="r">900</td><td class="r">2,7 млн ₽</td></tr>
+          <tr><td>База клиентов и промокоды</td><td class="r">0 ₽</td><td>6 000 контактов, частота ×1,3</td><td class="r">1 400</td><td class="r">4,2 млн ₽</td></tr>
+          <tr><td>Подписка и цветы для дома</td><td class="r">0 ₽</td><td>120 подписчиков, 1 500 покупок «для дома»</td><td class="r">600</td><td class="r">1,8 млн ₽</td></tr>
+          <tr><td>Сайт и доставка</td><td class="r">0 ₽</td><td>500 заказов</td><td class="r">500</td><td class="r">1,5 млн ₽</td></tr>
+          <tr><td>Агрегаторы</td><td class="r">0 ₽</td><td>200 заказов</td><td class="r">200</td><td class="r">0,6 млн ₽</td></tr>
+          <tr class="total"><td>Итого</td><td class="r">0 ₽</td><td></td><td class="r">5 850</td><td class="r">17,6 млн ₽</td></tr>
+          <tr class="sub"><td colspan="5">Платное продвижение и B2B</td></tr>
+          <tr><td>Креаторы и платные блогеры</td><td class="r">450 000 ₽</td><td>60+ роликов, 1,5 млн охвата</td><td class="r">700</td><td class="r">2,1 млн ₽</td></tr>
+          <tr><td>2ГИС и Яндекс Карты</td><td class="r">150 000 ₽</td><td>3,1 → 4,5; флагман 1 100+ оценок</td><td class="r">1 500</td><td class="r">4,5 млн ₽</td></tr>
+          <tr><td>VK Реклама</td><td class="r">270 000 ₽</td><td>9 000 переходов, конверсия 3%</td><td class="r">270</td><td class="r">0,8 млн ₽</td></tr>
+          <tr><td>Яндекс Директ</td><td class="r">150 000 ₽</td><td>6 000 кликов, конверсия 6%</td><td class="r">360</td><td class="r">1,1 млн ₽</td></tr>
+          <tr><td>Посевы в пабликах</td><td class="r">180 000 ₽</td><td>900 000 охвата</td><td class="r">330</td><td class="r">1,0 млн ₽</td></tr>
+          <tr><td>Наружная реклама</td><td class="r">300 000 ₽</td><td>3 млн контактов, 400 покупок по QR</td><td class="r">400</td><td class="r">1,2 млн ₽</td></tr>
+          <tr><td>B2B, клуб флористов, коллаборации</td><td class="r">0 ₽</td><td>40+ компаний, 300 оптовых заказов</td><td class="r">1 000</td><td class="r">3,0 млн ₽</td></tr>
+          <tr class="total"><td>Итого</td><td class="r">1 500 000 ₽</td><td></td><td class="r">4 560</td><td class="r">13,7 млн ₽</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted small">Прогноз показывает возможности рынка и каждого инструмента; с каждым клиентом достигаются свои цифры при большой и комплексной работе. Реальный прирост выше отслеживаемого: часть покупателей приходит без промокода.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- 14 STRESS -->
+<section class="slide" id="stress">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>14</b><span class="eyebrow">Устойчивость прогноза</span></span>
+      <h2>Что будет, если всё пойдёт хуже плана</h2>
+      <p class="lead">Базовый прогноз считает покупки по промокодам. Стресс-тест учитывает три поправки: часть покупок сделают те, кто купил бы и так; бонусы и гарантия снижают маржу; конверсия может оказаться вдвое ниже.</p>
+    </div>
+    <div class="stack-lg">
+      <div class="tw wide"><table>
+        <thead><tr><th>Сценарий</th><th>Допущения</th><th class="r">Доп. выручка</th><th class="r">Валовая прибыль</th><th class="r">Вложения</th><th class="r">Прибыль</th><th class="r">ROMI</th></tr></thead>
+        <tbody>
+          <tr><td><b>Базовый прогноз</b></td><td>Как в плане</td><td class="r">31,2 млн ₽</td><td class="r">12,5 млн ₽</td><td class="r">5,4 млн ₽</td><td class="r"><b>7,1 млн ₽</b></td><td class="r">131%</td></tr>
+          <tr class="hl"><td><b>Реалистичный</b></td><td>Каннибализация 25%, маржа 36%</td><td class="r">23,4 млн ₽</td><td class="r">8,4 млн ₽</td><td class="r">5,4 млн ₽</td><td class="r"><b>3,0 млн ₽</b></td><td class="r">56%</td></tr>
+          <tr><td><b>Пессимистичный без реакции</b></td><td>Плюс конверсия вдвое ниже, маржа 34%</td><td class="r">11,7 млн ₽</td><td class="r">4,0 млн ₽</td><td class="r">5,4 млн ₽</td><td class="r"><b>−1,4 млн ₽</b></td><td class="r">−26%</td></tr>
+          <tr><td><b>Пессимистичный со стоп-правилами</b></td><td>Реклама урезана до теста 0,5 млн ₽, продакшн по нижней границе</td><td class="r">11,7 млн ₽</td><td class="r">4,0 млн ₽</td><td class="r">3,7 млн ₽</td><td class="r"><b>≈ +0,2 млн ₽</b></td><td class="r">≈ 0%</td></tr>
+        </tbody>
+      </table></div>
+      <div class="g3">
+        <div class="card"><span class="eyebrow">Точка безубыточности</span><p class="quote" style="font-size:clamp(22px,2.6vw,28px)">13,5 млн ₽ <em>- 43% прогноза</em></p><p class="small muted">При марже 40% вложения 5,4 млн ₽ окупаются уже на 4 500 покупках за полгода - это 3-4 покупки в день на точку.</p></div>
+        <div class="card"><span class="eyebrow">Запас прочности</span><p class="small">Прогноз может не сбыться больше чем наполовину, и проект остаётся в плюсе. В худшем случае стоп-правила удерживают его около нуля, а не в минусе.</p></div>
+        <div class="card"><span class="eyebrow">Как мерить реальный прирост</span><ul class="small"><li>Коды «первой покупки» - только новым клиентам, проверка по телефону в базе</li><li>Выручка каждой точки к тому же месяцу прошлого года</li><li>1-2 контрольные точки с меньшей локальной активностью</li></ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 UNIT -->
+<section class="slide blush" id="unit">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>15</b><span class="eyebrow">Юнит-экономика</span></span>
+      <h2>Сколько стоит клиент и сколько он приносит</h2>
+      <p class="lead">Допущения до получения данных кассы: средний чек 3 000 ₽, маржа 40%, постоянный клиент покупает 4 раза в год и остаётся 2 года.</p>
+    </div>
+    <div class="stack-lg">
+      <div class="tiles">
+        <div class="tile"><span class="v num">1 200 ₽</span><span class="k">валовая прибыль с одной покупки</span></div>
+        <div class="tile accent"><span class="v num">~9 600 ₽</span><span class="k">LTV - валовая прибыль с клиента за 2 года; в пессимистичном варианте ~4 800 ₽</span></div>
+        <div class="tile"><span class="v num">≈ 420 ₽</span><span class="k">средний CAC платных каналов: 1,5 млн ₽ ÷ 3 560 покупок</span></div>
+        <div class="tile rose"><span class="v num">≈ 18</span><span class="k">LTV / CAC; здоровый уровень для бизнеса - от 3</span></div>
+      </div>
+      <div class="g2">
+        <div class="card"><h3>CAC с учётом всех вложений</h3><p>5,4 млн ₽ ÷ 10 410 покупок ≈ <b>520 ₽</b> - меньше половины прибыли с первой покупки. Каждый привлечённый клиент окупается уже с первого букета.</p></div>
+        <div class="card"><h3>Стоимость гарантии свежести</h3><p>При 3% обращений и замене по себестоимости (~1 800 ₽) гарантия стоит около 54 ₽ на заказ, то есть <b>1,8% выручки</b>; при 5% обращений - около 3%. В цену закладываем 2-3%. Это кратно дешевле потерянного клиента с LTV 9 600 ₽.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 CHANNEL DECISIONS -->
+<section class="slide" id="channels-roi">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>16</b><span class="eyebrow">Решения по каналам</span></span>
+      <h2>Каналы неравноценны - бюджет идёт туда, где он окупается</h2>
+    </div>
+    <div class="stack-lg">
+      <div class="tw wide"><table>
+        <thead><tr><th>Канал</th><th class="r">Бюджет</th><th class="r">Выручка</th><th class="r">₽ выручки на 1 ₽</th><th class="r">CAC</th><th>Решение</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td><b>2ГИС и Яндекс Карты</b></td><td class="r">150 тыс. ₽</td><td class="r">4,5 млн ₽</td><td class="r"><b>30</b></td><td class="r">100 ₽</td><td>Приоритет №1, первым из платных каналов</td></tr>
+          <tr><td><b>Яндекс Директ</b></td><td class="r">150 тыс. ₽</td><td class="r">1,1 млн ₽</td><td class="r">7,3</td><td class="r">417 ₽</td><td>Масштабируем к праздничным пикам</td></tr>
+          <tr><td><b>Посевы в пабликах</b></td><td class="r">180 тыс. ₽</td><td class="r">1,0 млн ₽</td><td class="r">5,6</td><td class="r">545 ₽</td><td>Оставляем, отбираем лучшие паблики по промокодам</td></tr>
+          <tr><td><b>Креаторы и блогеры</b></td><td class="r">450 тыс. ₽</td><td class="r">2,1 млн ₽</td><td class="r">4,7</td><td class="r">643 ₽</td><td>Оставляем: кроме продаж дают 60+ роликов в контент</td></tr>
+          <tr><td><b>Наружная реклама</b></td><td class="r">300 тыс. ₽</td><td class="r">1,2 млн ₽</td><td class="r">4,0</td><td class="r">750 ₽</td><td>Только под пики: работает на узнаваемость, которую промокод не ловит</td></tr>
+          <tr><td><b>VK Реклама</b></td><td class="r">270 тыс. ₽</td><td class="r">0,8 млн ₽</td><td class="r"><b>3,0</b></td><td class="r">1 000 ₽</td><td>Тест 100 тыс. ₽: только ретаргетинг и похожие на базу</td></tr>
+        </tbody>
+      </table></div>
+      <div class="g3">
+        <div class="card"><span class="eyebrow">Почему VK не отключаем</span><p class="small">На первой покупке канал почти в ноль: CAC 1 000 ₽ при прибыли с заказа 1 200 ₽. Но если клиент попадает в базу, его LTV 9 600 ₽, и канал окупается в 9 раз. Поэтому VK работает только со сбором телефона на первой покупке.</p></div>
+        <div class="card"><span class="eyebrow">Перераспределение</span><p class="small">Освободившиеся 170 тыс. ₽ из VK уходят в Директ к пикам: около +0,3 млн ₽ выручки при тех же деньгах. Карты не масштабируются бесконечно - платных карточек всего 7-14, поэтому излишек идёт в поиск.</p></div>
+        <div class="card"><span class="eyebrow">Стоп-правила</span><p class="small">Две недели теста на каждый канал. CAC выше 1 200 ₽ (прибыль с первой покупки) - сокращаем. CAC ниже 600 ₽ - добавляем +30% бюджета.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 CONTROL -->
+<section class="slide" id="control">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>17</b><span class="eyebrow">Измерение</span></span>
+      <h2>Отчёт в деньгах, а не в лайках</h2>
+    </div>
+    <div class="g3">
+      <div class="card"><h3>Репутация</h3><p class="small muted">Рейтинг по каждой точке, число оценок, срок ответа на отзыв</p></div>
+      <div class="card"><h3>Внимание</h3><p class="small muted">Охваты, подписчики, просмотры и досмотры, знание бренда по опросу до старта и в финале</p></div>
+      <div class="card"><h3>Продажи и повторные покупки</h3><p class="small muted">Покупки по промокодам каждого канала, выручка, средний чек, доля повторных, ДРР, ROMI, CAC</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 RISKS -->
+<section class="slide dark" id="risks">
+  <div class="wrap">
+    <div class="head">
+      <span class="chap"><b>18</b><span class="eyebrow">Риски</span></span>
+      <h2>Что может пойти не так и что заложено заранее</h2>
+    </div>
+    <div class="tw wide" style="border-color:rgba(255,255,255,.1)"><table>
+      <thead><tr><th>Риск</th><th>Решение в стратегии</th></tr></thead>
+      <tbody>
+        <tr><td>Реклама запускается раньше, чем исправлено качество</td><td>Платный охват - только после фундамента</td></tr>
+        <tr><td>Сбой в праздники: очереди, остатки, ошибки</td><td>Предзаказ, слоты, отдельная линия, разбор после каждого праздника</td></tr>
+        <tr><td>Товар-символ и акции съедают маржу</td><td>Цены на баннеры ставятся только после расчёта маржи</td></tr>
+        <tr><td>Блокировка или ограничение рекламного канала</td><td>Своя база клиентов и присутствие сразу на нескольких площадках</td></tr>
+        <tr><td>Флористы не хотят сниматься</td><td>Участие добровольное, начинаем с тех, кого покупатели уже знают</td></tr>
+        <tr><td>Сравнения вызывают претензии конкурентов</td><td>Конкурентов не называем, сравниваем со средней ценой, храним расчёты</td></tr>
+        <tr><td>Гарантией свежести злоупотребляют</td><td>Замена по фото и чеку, учёт обращений по точкам и поставкам</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<footer><div class="wrap"><span>Маркетинговая стратегия · сеть цветочных баз · клиент <span class="redact" style="min-width:3em"></span></span><span>Данные рынка - на октябрь 2026 года</span></div></footer>
+
+<script>
+(function(){
+  var S={
+    base:{ads:"1,2 млн ₽",rev:"28,9 млн ₽",gp:"11,6 млн ₽",pr:"6,5 млн ₽ · 127%"},
+    opt:{ads:"1,5 млн ₽",rev:"31,2 млн ₽",gp:"12,5 млн ₽",pr:"7,1 млн ₽ · 131%"},
+    max:{ads:"1,8 млн ₽",rev:"33,4 млн ₽",gp:"13,3 млн ₽",pr:"7,6 млн ₽ · 134%"}
+  };
+  var btns=document.querySelectorAll('.seg button');
+  btns.forEach(function(b){b.addEventListener('click',function(){
+    var s=S[b.dataset.s];
+    btns.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+    document.querySelectorAll('#sc-tiles [data-k]').forEach(function(el){el.textContent=s[el.dataset.k]});
+  })});
+  var chips=[].slice.call(document.querySelectorAll('#chips a'));
+  var secs=chips.map(function(a){return document.querySelector(a.getAttribute('href'))});
+  var prog=document.getElementById('prog'), cur=-1;
+  function onScroll(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+    var idx=0; secs.forEach(function(s,i){if(s&&s.getBoundingClientRect().top<120)idx=i});
+    if(idx!==cur){cur=idx;chips.forEach(function(c,i){c.classList.toggle('on',i===idx)});
+      var c=chips[idx], box=c.parentNode; box.scrollTo({left:c.offsetLeft-box.clientWidth/2+c.clientWidth/2,behavior:'smooth'});}
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+})();
+</script>
+
+</body>
+</html>
